@@ -5,7 +5,6 @@ import time
 import pygame_gui
 # Pygame 초기화
 pygame.init()
-
 # 상수들
 WIDTH, HEIGHT = 1024, 576
 gravity = 9.8/10  # 중력 가속도. 스케일은 1:10 - 0.2만큼 줄어듦
@@ -21,20 +20,9 @@ floor_friction = 0.9  # 바닥 마찰 계수
 dx = speed * math.cos(math.radians(angle))  # x 축의 속도
 dy = -speed * math.sin(math.radians(angle))  # y 축의 속도
 
-#speed - 한번에 나가는 거리 - 37
-
-# 디스플레이 설정
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
+font = pygame.font.SysFont("malgungothic", 24) 
 pygame.display.set_caption("Physics Simulation")
-# 텍스트 입력 상자 생성
-
-manager = pygame_gui.UIManager((WIDTH, HEIGHT))
-text_entry = pygame_gui.elements.ui_text_entry_line.UITextEntryLine(relative_rect=pygame.Rect((350, 275), (100, 50)), manager=manager)
-# GUI 관리자 생성
-
-
-# 1. 클래스 변경
 
 # 클래스 
 class Ball:
@@ -43,8 +31,8 @@ class Ball:
         self.y=Y
         self.dx=DX
         self.dy=DY
-        self.start=False
-        self.start_time=""
+        self.distance=0
+        self.stop=True
 
     def move(self):
         # 위치 변화
@@ -52,10 +40,7 @@ class Ball:
         self.x += self.dx
         self.y += self.dy
 
-        if self.start==False and  self.start_time=="":
-           self.start=True 
-           self.start_time=time.time()
-
+        
         # 충돌 조건 계산
         collide_right = self.x + R > WIDTH
         collide_left = self.x - R < 0
@@ -74,10 +59,9 @@ class Ball:
                 self.y = HEIGHT - R
                 self.dy *= -restitution
                 self.dx *= floor_friction  # 바닥 마찰 계수 적용
-                if self.start==True :
-                    elapsed_time = time.time() - self.start_time
-                    self.start=False
-                    print(f"First hit after {elapsed_time:.2f} seconds")
+                if ball.distance==0 :
+                    ball.distance=self.x
+                    print(f"distance :{self.x:.2f}")
 
             case (_, _, _, True):  # 위쪽 벽 충돌
                 self.y = R
@@ -90,47 +74,37 @@ class Ball:
         pygame.draw.ellipse(screen, (0, 0, 0, 192), (self.x -R, self.y - R, R*2, R*2))
 
 
-# 클래스 인스턴스 생성
-# ball = Ball(X, Y, R*2, R*2, dx, dy)
+
 ball = Ball(X, Y,  dx, dy)
 screen.fill((220, 220, 220))
 ball.display()
 pygame.display.flip()
 
-
 running = True
-cnt=0
-loop=True
-
+print(  ball.stop)
 while running:
-    for event in pygame.event.get():  
+    
 
-        manager.process_events(event)
+    for event in pygame.event.get():
 
-        if event.type == pygame.QUIT: 
-            running = False  
-        if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                   print(" Press K_SPACE")
-                   loop=True if loop !=True else False
-   
-    if loop==True:
-        continue
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            print(" Press ascii code=",event.key )
+            if event.key == pygame.K_SPACE:
+                ball.stop = not ball.stop
+
     
-    
-    
-    manager.draw_ui((WIDTH, HEIGHT))
 
     screen.fill((220, 220, 220))
-    
-    ball.move()
-    ball.display()
+    if not ball.stop:
+        ball.move()
 
-    # 화면 갱신
+    ball.display()
+    screen.blit(font.render("distance = " + str(ball.distance), True, (255, 0, 0)), (50, 50))
     pygame.display.flip()
-    pygame.time.Clock().tick(30) # 1초에 30번씩 업데이트 # 화면 주기 # 30을 5로 바꾸면 
-   
-# 정리
+    pygame.time.Clock().tick(30)
+
 pygame.quit()
 sys.exit()
 
