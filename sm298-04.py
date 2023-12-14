@@ -2,7 +2,6 @@ import pygame
 import math
 import sys
 import time  
-import pygame_gui
 # Pygame 초기화
 pygame.init()
 # 상수들
