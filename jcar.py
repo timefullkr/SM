@@ -39,9 +39,17 @@ class Car:
             self.speed -=0.5
             move_sound.stop()
 
+         # 예상 위치 계산
         radians = math.radians(self.angle)
-        self.location.x += self.speed * math.cos(radians)
-        self.location.y -= self.speed * math.sin(radians)
+        new_x = self.location.x + self.speed * math.cos(radians)
+        new_y = self.location.y - self.speed * math.sin(radians)
+
+        # 화면 경계 검사
+        if 0 <= new_x <= WIDTH - self.location.width and 0 <= new_y <= HEIGHT - self.location.height:
+            self.location.x = new_x
+            self.location.y = new_y
+        else:
+            self.speed = 0
         
 
 car = Car('carA1.png', 1, WIDTH/2, HEIGHT-100)
@@ -67,9 +75,9 @@ while True:
     car.move()
     car.rotate()
 
-    screen.fill((0, 0, 0))
+    screen.fill((255,255,255))
     screen.blit(car.image, car.location)
-    screen.blit(font.render("speed = " + str(car.speed), True, (255,255,255)), (50, 50))
+    screen.blit(font.render("speed = " + str(car.speed), True, (0,0,0)), (50, 50))
 
     pygame.display.update()
     pygame.time.Clock().tick(30)

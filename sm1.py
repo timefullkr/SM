@@ -3,24 +3,18 @@ import math
 import sys
 import time
 import random
-# Pygame 초기화
+
 pygame.init()
-
-# 화면 크기 
 WIDTH, HEIGHT = 1024, 576
-gravity = 9.8/10  # 중력 가속도. 스케일은 1:10
+gravity = 9.8/10
 restitution = 0.7  # 복원 계수
-bb=0.6
-
+friction_coefficient=0.6
 R = 20  # 공의 반지름
-X, Y = R, HEIGHT-R # Starting position (x, y)
 angle = 45  # 출발 각도
 speed = 28  # 공의 속도
-
 # 속도 계산
 dx = speed * math.cos(math.radians(angle))  # x 축의 속도
 dy = -speed * math.sin(math.radians(angle))  # y 축의 속도
-
 # 디스플레이 설정
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Physics Simulation")
@@ -37,7 +31,6 @@ class Ball:
          self.green=green
          self.blue=blue
          self.pause=True
-         self.dd=0
          
 
     def move(self):
@@ -64,10 +57,8 @@ class Ball:
             case (_, _, True, _):  # 아래쪽 벽 충돌
                 self.y = HEIGHT - R
                 self.dy *= -restitution
-                self.dx *= bb
-                if self.dd==0:
-                    self.dd=self.x
-                    print( "거리=", self.x )
+                self.dx *= friction_coefficient
+                
                 
             case (_, _, _, True):  # 위쪽 벽 충돌
                 self.y = R
@@ -82,11 +73,14 @@ class Ball:
 # 클래스 인스턴스 생성b
 
 ball=[]
-for i in range(4):
-    red = random.randint(0, 255)
+ball_cnt=60
+for i in range(ball_cnt):
+    red = random.randint(0, 255) # 0~ 255 사의 난수 발생
     green = random.randint(0, 255)
     blue = random.randint(0, 255)
-    ball.append( Ball( X + i*100, Y, dx, dy, red, green,blue ))
+    X= random.randint(R, WIDTH-R)
+    Y= random.randint(R, HEIGHT-R)
+    ball.append( Ball( X, Y, dx, dy, red, green,blue ))
 
 running = True
 while running:
@@ -97,20 +91,18 @@ while running:
             if event.type == pygame.KEYDOWN:
                 print(" Press ascii code=",event.key )
                 if event.key==32:
-                    for i in range(4):
+                    for i in range(ball_cnt):
                        ball[i].pause= not ball[i].pause   
                   
     screen.fill((220, 220, 220))
     
-    for i in range(4):
+    for i in range(ball_cnt):
         if ball[i].pause ==False :
             ball[i].move()
         
         ball[i].display()
    
-   
 
-    # 화면 갱신
     pygame.display.flip()
     pygame.time.Clock().tick(30)
     
@@ -118,8 +110,3 @@ while running:
 
 pygame.quit()
 sys.exit()
-
-# 1. SPACE 키를 누르면 시작 OR 정지
-# 2. 코드 분석 >> 자신의 코드로 만들기
-# 2.1  class Ball 분석 정리 -> 불필요한 내용 제거 단순화 
-# 2.2  def move(self)의 IF 문을  match 문으로 변경 충돌 조건을 더 명확하게 표현 하고, 가독성 향상
